@@ -1,6 +1,6 @@
 import express from 'express';
 import dotenv from 'dotenv';
-import { GoogleGenAI } from '@google/genai';
+import { GoogleGenAI, Type } from '@google/genai';
 import path from 'path';
 import { fileURLToPath } from 'url';
 
@@ -8,6 +8,84 @@ dotenv.config();
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
+
+// Strict responseSchema for Gemini Structured Output
+const recyclingImpactSchema = {
+  type: Type.OBJECT,
+  properties: {
+    tituloDictamen: {
+      type: Type.STRING,
+      description: 'Título oficial del dictamen ecológico emitido por la IA.',
+    },
+    arboles: {
+      type: Type.OBJECT,
+      properties: {
+        cantidad: { type: Type.NUMBER, description: 'Cantidad numérica de árboles salvados.' },
+        descripcion: { type: Type.STRING, description: 'Frase explicativa breve de árboles salvados.' },
+        factorUsado: { type: Type.STRING, description: 'Factor matemático exacto por kg.' },
+        fuenteOficial: { type: Type.STRING, description: 'Organismo y reporte oficial citado.' },
+      },
+      required: ['cantidad', 'descripcion', 'factorUsado', 'fuenteOficial'],
+    },
+    agua: {
+      type: Type.OBJECT,
+      properties: {
+        cantidadLitros: { type: Type.NUMBER, description: 'Litros numéricos de agua potable preservados.' },
+        descripcion: { type: Type.STRING, description: 'Frase explicativa de ahorro de agua.' },
+        factorUsado: { type: Type.STRING, description: 'Factor de agua por kg.' },
+        fuenteOficial: { type: Type.STRING, description: 'Fuente científica citada.' },
+      },
+      required: ['cantidadLitros', 'descripcion', 'factorUsado', 'fuenteOficial'],
+    },
+    co2: {
+      type: Type.OBJECT,
+      properties: {
+        kgCO2e: { type: Type.NUMBER, description: 'Kilogramos numéricos de CO2 equivalente prevenidos.' },
+        descripcion: { type: Type.STRING, description: 'Explicación del CO2 evitado.' },
+        factorUsado: { type: Type.STRING, description: 'Factor de emisiones por kg.' },
+        fuenteOficial: { type: Type.STRING, description: 'Fuente internacional citada (ej: IPCC o EPA).' },
+      },
+      required: ['kgCO2e', 'descripcion', 'factorUsado', 'fuenteOficial'],
+    },
+    energia: {
+      type: Type.OBJECT,
+      properties: {
+        kwhAhorrados: { type: Type.NUMBER, description: 'Kilovatios-hora de electricidad ahorrados.' },
+        equivalenciaEscolar: { type: Type.STRING, description: 'Comparación tangible escolar (horas foco LED o computadoras).' },
+        fuenteOficial: { type: Type.STRING, description: 'Fuente energética citada.' },
+      },
+      required: ['kwhAhorrados', 'equivalenciaEscolar', 'fuenteOficial'],
+    },
+    analogiaEscolar: {
+      type: Type.STRING,
+      description: 'Analogía tangible para estudiantes y comunidad escolar.',
+    },
+    consejoCompetencia: {
+      type: Type.STRING,
+      description: 'Consejo estratégico para mejorar posición en la tabla de reciclaje.',
+    },
+    insigniaOtorgada: {
+      type: Type.STRING,
+      description: 'Nombre del reconocimiento ecológico otorgado a la sección.',
+    },
+    fuentesCitadas: {
+      type: Type.ARRAY,
+      items: { type: Type.STRING },
+      description: 'Lista de organismos y modelos citados en la evaluación.',
+    },
+  },
+  required: [
+    'tituloDictamen',
+    'arboles',
+    'agua',
+    'co2',
+    'energia',
+    'analogiaEscolar',
+    'consejoCompetencia',
+    'insigniaOtorgada',
+    'fuentesCitadas',
+  ],
+};
 
 async function startServer() {
   const app = express();
@@ -90,11 +168,12 @@ Responde ÚNICAMENTE en JSON válido con este esquema:
 }`;
 
       const response = await ai.models.generateContent({
-        model: 'gemini-3.8-flash',
+        model: 'gemini-2.5-flash',
         contents: prompt,
         config: {
           responseMimeType: 'application/json',
-          temperature: 0.25,
+          responseSchema: recyclingImpactSchema,
+          temperature: 0.2,
         },
       });
 
