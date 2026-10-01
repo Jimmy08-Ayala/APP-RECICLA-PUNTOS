@@ -1,0 +1,6 @@
+{
+  "name": "ReciclaPuntos - Competencia Ecológica Escolar",
+  "description": "Plataforma de reciclaje competitivo entre secciones del instituto con registro de kilos por material, ranking en vivo, meta mensual y equivalencias de impacto ecológico certificadas con IA.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
