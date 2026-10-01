@@ -85,11 +85,14 @@ const STORAGE_KEYS = {
 };
 
 export const RecyclingProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  // Load state from LocalStorage or initialize with seed data
+  // Load state from LocalStorage or initialize with seed data (Defensive against corrupted storage)
   const [sections, setSections] = useState<Section[]>(() => {
     try {
       const saved = localStorage.getItem(STORAGE_KEYS.SECTIONS);
-      if (saved) return JSON.parse(saved);
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+      }
     } catch {
       // Fallback
     }
@@ -99,7 +102,13 @@ export const RecyclingProvider: React.FC<{ children: React.ReactNode }> = ({ chi
   const [entries, setEntries] = useState<RecyclingEntry[]>(() => {
     try {
       const saved = localStorage.getItem(STORAGE_KEYS.ENTRIES);
-      if (saved) return JSON.parse(saved);
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          const valid = parsed.filter((e) => e && typeof e === 'object' && e.sectionId && e.materialId);
+          if (valid.length > 0) return valid;
+        }
+      }
     } catch {
       // Fallback
     }
@@ -109,7 +118,12 @@ export const RecyclingProvider: React.FC<{ children: React.ReactNode }> = ({ chi
   const [monthlyGoal, setMonthlyGoal] = useState<MonthlyGoal>(() => {
     try {
       const saved = localStorage.getItem(STORAGE_KEYS.GOAL);
-      if (saved) return JSON.parse(saved);
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        if (parsed && typeof parsed === 'object' && typeof parsed.targetKilos === 'number') {
+          return parsed;
+        }
+      }
     } catch {
       // Fallback
     }
@@ -171,6 +185,9 @@ export const RecyclingProvider: React.FC<{ children: React.ReactNode }> = ({ chi
     let grandKilos = 0;
     let grandPoints = 0;
 
+    const safeSections = Array.isArray(sections) && sections.length > 0 ? sections : INITIAL_SECTIONS;
+    const safeEntries = Array.isArray(entries) ? entries : INITIAL_ENTRIES;
+
     // Initialize map for all sections
     const statsMap: Record<string, {
       kilos: number;
@@ -180,7 +197,8 @@ export const RecyclingProvider: React.FC<{ children: React.ReactNode }> = ({ chi
       entriesCount: number;
     }> = {};
 
-    sections.forEach((s) => {
+    safeSections.forEach((s) => {
+      if (!s || !s.id) return;
       statsMap[s.id] = {
         kilos: 0,
         points: 0,
@@ -204,9 +222,12 @@ export const RecyclingProvider: React.FC<{ children: React.ReactNode }> = ({ chi
       };
     });
 
-    entries.forEach((e) => {
-      grandKilos += e.kilos;
-      grandPoints += e.points;
+    safeEntries.forEach((e) => {
+      if (!e || !e.sectionId) return;
+      const kilos = Number(e.kilos) || 0;
+      const points = Number(e.points) || 0;
+      grandKilos += kilos;
+      grandPoints += points;
 
       if (!statsMap[e.sectionId]) {
         statsMap[e.sectionId] = {
@@ -219,17 +240,17 @@ export const RecyclingProvider: React.FC<{ children: React.ReactNode }> = ({ chi
       }
 
       const item = statsMap[e.sectionId];
-      item.kilos += e.kilos;
-      item.points += e.points;
+      item.kilos += kilos;
+      item.points += points;
       item.entriesCount += 1;
       if (item.materialKilos[e.materialId] !== undefined) {
-        item.materialKilos[e.materialId] += e.kilos;
-        item.materialPoints[e.materialId] += e.points;
+        item.materialKilos[e.materialId] += kilos;
+        item.materialPoints[e.materialId] += points;
       }
     });
 
     // Convert to array and sort by total points (primary) and kilos (secondary)
-    const list: SectionStats[] = sections.map((sec) => {
+    const list: SectionStats[] = safeSections.map((sec) => {
       const data = statsMap[sec.id] || {
         kilos: 0,
         points: 0,
@@ -353,16 +374,17 @@ export const RecyclingProvider: React.FC<{ children: React.ReactNode }> = ({ chi
 
   // Action: Reset to defaults
   const resetToDefaultData = useCallback(() => {
-    if (window.confirm('¿Restablecer datos originales de prueba de la competencia?')) {
+    if (entries.length === 0 || window.confirm('¿Cargar datos de prueba de la competencia?')) {
       setSections(INITIAL_SECTIONS);
       setEntries(INITIAL_ENTRIES);
       setMonthlyGoal(INITIAL_MONTHLY_GOAL);
-      localStorage.removeItem(STORAGE_KEYS.SECTIONS);
-      localStorage.removeItem(STORAGE_KEYS.ENTRIES);
-      localStorage.removeItem(STORAGE_KEYS.GOAL);
-      showNotification('Datos de prueba originales restaurados.', 'info');
+      localStorage.setItem(STORAGE_KEYS.SECTIONS, JSON.stringify(INITIAL_SECTIONS));
+      localStorage.setItem(STORAGE_KEYS.ENTRIES, JSON.stringify(INITIAL_ENTRIES));
+      localStorage.setItem(STORAGE_KEYS.GOAL, JSON.stringify(INITIAL_MONTHLY_GOAL));
+      sounds.playSuccessChime();
+      showNotification('¡Datos de prueba cargados con éxito! Entregas listas en el historial.', 'success');
     }
-  }, [showNotification]);
+  }, [entries.length, showNotification]);
 
   // Action: Export data as JSON file
   const exportDataJson = useCallback(() => {

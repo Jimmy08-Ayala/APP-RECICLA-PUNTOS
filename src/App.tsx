@@ -17,6 +17,7 @@ import { SectionDetailModal } from './components/SectionDetailModal';
 import { VersusModal } from './components/VersusModal';
 import { GoalConfigModal } from './components/GoalConfigModal';
 import { ToastNotification } from './components/ToastNotification';
+import { ErrorBoundary } from './components/ErrorBoundary';
 import {
   Recycle,
   PlusCircle,
@@ -108,8 +109,10 @@ function DashboardContent() {
 
 export default function App() {
   return (
-    <RecyclingProvider>
-      <DashboardContent />
-    </RecyclingProvider>
+    <ErrorBoundary>
+      <RecyclingProvider>
+        <DashboardContent />
+      </RecyclingProvider>
+    </ErrorBoundary>
   );
 }

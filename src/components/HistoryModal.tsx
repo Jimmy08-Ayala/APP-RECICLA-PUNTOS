@@ -7,9 +7,10 @@ import {
   Upload,
   RotateCcw,
   Search,
-  Filter,
   FileSpreadsheet,
   AlertCircle,
+  Plus,
+  Sparkles,
 } from 'lucide-react';
 import { useRecycling } from '../context/RecyclingContext';
 import { MaterialId } from '../types';
@@ -28,6 +29,7 @@ export const HistoryModal: React.FC = () => {
     exportDataJson,
     importDataJson,
     monthlyGoal,
+    setIsRegisterOpen,
   } = useRecycling();
 
   const [search, setSearch] = useState('');
@@ -71,7 +73,6 @@ export const HistoryModal: React.FC = () => {
     sounds.playTick();
     const sanitizeCsv = (val: string) => {
       const str = (val || '').replace(/"/g, '""');
-      // Escape CSV formula triggers (=, +, -, @)
       return /^[=\+\-@]/.test(str) ? `"'${str}"` : `"${str}"`;
     };
 
@@ -128,7 +129,12 @@ export const HistoryModal: React.FC = () => {
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-sm animate-fadeIn">
+    <div
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="history-modal-title"
+      className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-slate-950/85 backdrop-blur-sm animate-fadeIn"
+    >
       {/* Hidden file input for JSON import */}
       <input
         type="file"
@@ -138,77 +144,82 @@ export const HistoryModal: React.FC = () => {
         className="hidden"
       />
 
-      <div className="relative w-full max-w-3xl rounded-3xl bg-slate-900 border border-slate-700/80 shadow-2xl shadow-slate-950/80 overflow-hidden flex flex-col max-h-[90vh]">
+      <div className="relative w-full max-w-3xl rounded-3xl bg-slate-900 border-2 border-slate-700 shadow-2xl shadow-slate-950/90 overflow-hidden flex flex-col max-h-[92vh]">
         
         {/* Header */}
-        <div className="flex items-center justify-between px-6 py-4 border-b border-slate-800 bg-slate-950/60">
-          <div className="flex items-center gap-2.5">
-            <div className="w-9 h-9 rounded-xl bg-sky-500/20 text-sky-400 border border-sky-500/30 flex items-center justify-center">
-              <History className="w-5 h-5" />
+        <div className="flex items-center justify-between px-4 sm:px-6 py-4 border-b-2 border-slate-800 bg-slate-950">
+          <div className="flex items-center gap-3">
+            <div className="w-11 h-11 rounded-2xl bg-sky-500/20 text-sky-400 border border-sky-500/40 flex items-center justify-center flex-shrink-0">
+              <History className="w-6 h-6" />
             </div>
             <div>
-              <h3 className="text-lg font-black text-white">Historial de Entregas (M2)</h3>
-              <p className="text-xs text-slate-400">Auditoría completa de kilos por material y sección</p>
+              <h3 id="history-modal-title" className="text-xl sm:text-2xl font-black text-white">
+                Historial de Entregas
+              </h3>
+              <p className="text-sm sm:text-base text-slate-300">
+                Auditoría completa de kilos, materiales y secciones
+              </p>
             </div>
           </div>
 
           <div className="flex items-center gap-2">
             <button
               onClick={() => fileInputRef.current?.click()}
-              className="px-3 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white border border-slate-700 text-xs font-bold flex items-center gap-1.5 transition-all"
+              className="min-h-[44px] px-3 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 hover:text-white border border-slate-600 text-sm font-bold flex items-center gap-1.5 transition-all"
               title="Restaurar copia de seguridad JSON"
             >
-              <Upload className="w-3.5 h-3.5 text-teal-400" />
+              <Upload className="w-4 h-4 text-teal-400" />
               <span className="hidden sm:inline">Importar</span>
             </button>
 
             <button
               onClick={handleExportCsv}
-              className="px-3 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white border border-slate-700 text-xs font-bold flex items-center gap-1.5 transition-all"
+              className="min-h-[44px] px-3 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 hover:text-white border border-slate-600 text-sm font-bold flex items-center gap-1.5 transition-all"
               title="Descargar Excel / CSV"
             >
-              <FileSpreadsheet className="w-3.5 h-3.5 text-emerald-400" />
+              <FileSpreadsheet className="w-4 h-4 text-emerald-400" />
               <span className="hidden sm:inline">CSV</span>
             </button>
 
             <button
               onClick={exportDataJson}
-              className="px-3 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white border border-slate-700 text-xs font-bold flex items-center gap-1.5 transition-all"
+              className="min-h-[44px] px-3 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 hover:text-white border border-slate-600 text-sm font-bold flex items-center gap-1.5 transition-all"
               title="Copia de seguridad JSON"
             >
-              <Download className="w-3.5 h-3.5 text-sky-400" />
-              <span className="hidden sm:inline">Exportar JSON</span>
+              <Download className="w-4 h-4 text-sky-400" />
+              <span className="hidden sm:inline">Exportar</span>
             </button>
 
             <button
               onClick={handleClose}
-              className="p-2 rounded-xl text-slate-400 hover:text-white hover:bg-slate-800 transition-colors ml-1"
+              aria-label="Cerrar historial"
+              className="p-2.5 rounded-xl text-slate-300 hover:text-white hover:bg-slate-800 transition-colors ml-1 min-h-[44px] min-w-[44px] flex items-center justify-center"
             >
-              <X className="w-5 h-5" />
+              <X className="w-6 h-6" />
             </button>
           </div>
         </div>
 
         {/* Toolbar */}
-        <div className="p-4 border-b border-slate-800 bg-slate-900/90 flex flex-col sm:flex-row items-center justify-between gap-3">
-          <div className="relative w-full sm:w-72">
-            <Search className="w-3.5 h-3.5 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
+        <div className="p-4 border-b-2 border-slate-800 bg-slate-900 flex flex-col sm:flex-row items-center justify-between gap-3">
+          <div className="relative w-full sm:w-80">
+            <Search className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
             <input
               type="text"
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              placeholder="Filtrar por sección, nota o alumno..."
-              className="w-full pl-9 pr-3 py-2 rounded-xl bg-slate-800 border border-slate-700 text-white placeholder-slate-400 text-xs focus:outline-none focus:border-sky-500"
+              placeholder="Buscar por sección, notas o alumno..."
+              className="w-full pl-10 pr-4 py-2.5 rounded-xl bg-slate-950 border border-slate-700 text-white placeholder-slate-400 text-sm sm:text-base focus:outline-none focus:border-sky-400 min-h-[46px]"
             />
           </div>
 
-          <div className="flex items-center gap-1 overflow-x-auto w-full sm:w-auto pb-1 sm:pb-0">
+          <div className="flex items-center gap-1.5 overflow-x-auto w-full sm:w-auto pb-1 sm:pb-0">
             <button
               onClick={() => setFilterMaterial('all')}
-              className={`px-2.5 py-1 rounded-lg text-xs font-bold whitespace-nowrap transition-all ${
+              className={`min-h-[40px] px-3 py-1.5 rounded-xl text-sm font-bold whitespace-nowrap transition-all ${
                 filterMaterial === 'all'
-                  ? 'bg-sky-500 text-slate-950 font-black'
-                  : 'bg-slate-800 text-slate-400 hover:text-white'
+                  ? 'bg-sky-500 text-slate-950 font-black shadow-md'
+                  : 'bg-slate-850 bg-slate-800 text-slate-300 hover:text-white border border-slate-700'
               }`}
             >
               Todos ({entries.length})
@@ -217,13 +228,13 @@ export const HistoryModal: React.FC = () => {
               <button
                 key={m.id}
                 onClick={() => setFilterMaterial(m.id)}
-                className={`px-2 py-1 rounded-lg text-[11px] font-bold whitespace-nowrap transition-all flex items-center gap-1 ${
+                className={`min-h-[40px] px-3 py-1.5 rounded-xl text-sm font-bold whitespace-nowrap transition-all flex items-center gap-1.5 ${
                   filterMaterial === m.id
-                    ? 'bg-slate-700 text-white border border-slate-500'
-                    : 'bg-slate-800/60 text-slate-400 hover:text-white'
+                    ? 'bg-slate-800 text-white border-2 border-sky-400'
+                    : 'bg-slate-850 bg-slate-800 text-slate-300 hover:text-white border border-slate-700'
                 }`}
               >
-                <span className="w-2 h-2 rounded-full" style={{ backgroundColor: m.color }} />
+                <span className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: m.color }} />
                 <span>{m.name.split(' ')[0]}</span>
               </button>
             ))}
@@ -231,93 +242,152 @@ export const HistoryModal: React.FC = () => {
         </div>
 
         {/* Entries Table / List */}
-        <div className="p-4 overflow-y-auto flex-1 space-y-2">
-          {filteredEntries.map((e) => {
-            const sec = sectionMap.get(e.sectionId);
-            const mat = RECYCLING_MATERIALS[e.materialId];
+        <div className="p-4 overflow-y-auto flex-1 space-y-3">
+          
+          {/* CASO 1: Si no hay ninguna entrega en la base de datos */}
+          {entries.length === 0 ? (
+            <div className="py-10 px-4 text-center max-w-md mx-auto space-y-4">
+              <div className="w-16 h-16 rounded-3xl bg-amber-500/15 border-2 border-amber-500/40 text-amber-400 flex items-center justify-center mx-auto text-3xl shadow-lg">
+                📦
+              </div>
+              <div className="space-y-1">
+                <h4 className="text-xl sm:text-2xl font-black text-white">
+                  El historial está vacío
+                </h4>
+                <p className="text-base text-slate-300 leading-relaxed">
+                  Aún no se ha registrado ninguna entrega o se vació el marcador a 0 kg.
+                </p>
+              </div>
 
-            return (
-              <div
-                key={e.id}
-                className="p-3.5 rounded-2xl bg-slate-850 bg-slate-800/40 hover:bg-slate-800/80 border border-slate-700/60 transition-all flex items-center justify-between gap-4"
+              <div className="flex flex-col sm:flex-row items-center justify-center gap-3 pt-3">
+                <button
+                  onClick={() => resetToDefaultData()}
+                  className="w-full sm:w-auto min-h-[50px] px-6 py-3 rounded-2xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-black text-base shadow-xl active:scale-95 transition-all flex items-center justify-center gap-2"
+                >
+                  <RotateCcw className="w-5 h-5" />
+                  <span>Cargar entregas de ejemplo</span>
+                </button>
+
+                <button
+                  onClick={() => {
+                    handleClose();
+                    setIsRegisterOpen(true);
+                  }}
+                  className="w-full sm:w-auto min-h-[50px] px-6 py-3 rounded-2xl bg-slate-800 hover:bg-slate-700 text-white border-2 border-slate-600 font-bold text-base transition-all flex items-center justify-center gap-2"
+                >
+                  <Plus className="w-5 h-5 text-emerald-400" />
+                  <span>+ Registrar Kilos</span>
+                </button>
+              </div>
+            </div>
+          ) : filteredEntries.length === 0 ? (
+            /* CASO 2: Si hay entregas pero el filtro o búsqueda no arrojó resultados */
+            <div className="py-10 text-center text-slate-300 space-y-3">
+              <AlertCircle className="w-10 h-10 text-amber-400 mx-auto" />
+              <p className="text-base font-semibold">
+                No hay entregas que coincidan con la búsqueda o filtro seleccionado.
+              </p>
+              <button
+                onClick={() => {
+                  setSearch('');
+                  setFilterMaterial('all');
+                }}
+                className="min-h-[46px] px-5 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-white text-base font-bold border border-slate-600 transition-all inline-flex items-center gap-2"
               >
-                <div className="flex items-center gap-3">
-                  <span className="text-2xl">{sec?.avatar || '📦'}</span>
-                  <div>
-                    <div className="flex items-center gap-2">
-                      <span className="font-black text-white text-sm">{sec?.code || 'Sección'}</span>
-                      <span className="text-xs text-slate-400">{sec?.mascot}</span>
-                      <span
-                        className="px-2 py-0.5 rounded-full text-[10px] font-bold border"
-                        style={{
-                          backgroundColor: `${mat?.color}20`,
-                          borderColor: `${mat?.color}40`,
-                          color: mat?.color,
-                        }}
-                      >
-                        {mat?.name}
+                <span>Mostrar todas las entregas ({entries.length})</span>
+              </button>
+            </div>
+          ) : (
+            /* CASO 3: Lista de entregas con datos visibles y legibles */
+            filteredEntries.map((e) => {
+              const sec = sectionMap.get(e.sectionId);
+              const mat = (e.materialId && RECYCLING_MATERIALS[e.materialId])
+                ? RECYCLING_MATERIALS[e.materialId]
+                : { name: 'Reciclaje', color: '#10b981', pointsPerKg: 10 };
+
+              const kilos = typeof e.kilos === 'number' ? e.kilos : Number(e.kilos) || 0;
+              const points = typeof e.points === 'number' ? e.points : Number(e.points) || 0;
+
+              return (
+                <div
+                  key={e.id}
+                  className="p-4 rounded-2xl bg-slate-950/80 hover:bg-slate-800/80 border-2 border-slate-800 hover:border-slate-700 transition-all flex items-center justify-between gap-4"
+                >
+                  <div className="flex items-center gap-3.5">
+                    <span className="text-3xl flex-shrink-0">{sec?.avatar || '📦'}</span>
+                    <div>
+                      <div className="flex items-center gap-2.5 flex-wrap">
+                        <span className="font-black text-white text-lg">{sec?.code || 'Sección'}</span>
+                        <span className="text-sm font-semibold text-slate-300">{sec?.mascot || 'Participante'}</span>
+                        <span
+                          className="px-2.5 py-0.5 rounded-full text-xs font-black border"
+                          style={{
+                            backgroundColor: `${mat.color}25`,
+                            borderColor: `${mat.color}60`,
+                            color: mat.color,
+                          }}
+                        >
+                          {mat.name}
+                        </span>
+                      </div>
+
+                      <div className="flex items-center gap-2 text-sm text-slate-300 mt-1 flex-wrap">
+                        <span className="font-medium text-slate-400">{e.formattedDate || 'Reciente'}</span>
+                        {e.registeredBy && <span>• Entregó: <strong className="text-white">{e.registeredBy}</strong></span>}
+                        {e.notes && <span className="italic text-slate-400">• "{e.notes}"</span>}
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center gap-4 flex-shrink-0">
+                    <div className="text-right">
+                      <span className="text-xl font-black text-emerald-300 font-mono block">
+                        +{kilos} kg
+                      </span>
+                      <span className="text-sm font-bold text-amber-300 font-mono block">
+                        +{points} pts
                       </span>
                     </div>
 
-                    <div className="flex items-center gap-2 text-[11px] text-slate-400 mt-0.5">
-                      <span>{e.formattedDate}</span>
-                      {e.registeredBy && <span>• Por: {e.registeredBy}</span>}
-                      {e.notes && <span className="italic">• "{e.notes}"</span>}
-                    </div>
+                    <button
+                      onClick={() => handleDelete(e.id)}
+                      className="p-2.5 rounded-xl text-slate-400 hover:text-rose-400 hover:bg-rose-500/10 transition-colors min-h-[44px] min-w-[44px] flex items-center justify-center"
+                      title="Eliminar este registro"
+                      aria-label="Eliminar entrega"
+                    >
+                      <Trash2 className="w-5 h-5" />
+                    </button>
                   </div>
                 </div>
-
-                <div className="flex items-center gap-4 flex-shrink-0">
-                  <div className="text-right">
-                    <span className="text-base font-black text-emerald-400 font-mono block">
-                      +{e.kilos} kg
-                    </span>
-                    <span className="text-xs font-bold text-amber-400 font-mono block">
-                      +{e.points} pts
-                    </span>
-                  </div>
-
-                  <button
-                    onClick={() => handleDelete(e.id)}
-                    className="p-2 rounded-xl text-slate-500 hover:text-rose-400 hover:bg-rose-500/10 transition-colors"
-                    title="Eliminar registro"
-                  >
-                    <Trash2 className="w-4 h-4" />
-                  </button>
-                </div>
-              </div>
-            );
-          })}
-
-          {filteredEntries.length === 0 && (
-            <div className="py-12 text-center text-slate-400">
-              <AlertCircle className="w-8 h-8 text-slate-500 mx-auto mb-2" />
-              <p className="text-sm font-semibold">No hay entregas registradas con este filtro.</p>
-            </div>
+              );
+            })
           )}
+
         </div>
 
         {/* Footer with Reset Default and Clear Data */}
-        <div className="p-4 border-t border-slate-800 bg-slate-950/70 flex flex-col sm:flex-row items-center justify-between text-xs text-slate-400 gap-3">
-          <span>Total de entregas registradas: <strong className="text-white font-mono">{entries.length}</strong></span>
+        <div className="p-4 border-t-2 border-slate-800 bg-slate-950 flex flex-col sm:flex-row items-center justify-between text-sm text-slate-300 gap-3">
+          <span>
+            Total de pesajes registrados: <strong className="text-white font-mono text-base">{entries.length}</strong>
+          </span>
 
           <div className="flex items-center gap-4">
             <button
-              onClick={clearAllData}
-              className="text-slate-500 hover:text-rose-400 flex items-center gap-1 font-semibold transition-colors"
-              title="Vaciar todos los registros para iniciar de cero"
+              onClick={resetToDefaultData}
+              className="text-slate-300 hover:text-emerald-400 flex items-center gap-1.5 font-bold transition-colors py-1"
+              title="Restaurar las 12 entregas de prueba iniciales"
             >
-              <Trash2 className="w-3.5 h-3.5" />
-              <span>Borrar datos (0 kg)</span>
+              <RotateCcw className="w-4 h-4 text-emerald-400" />
+              <span>Cargar datos de prueba</span>
             </button>
 
             <button
-              onClick={resetToDefaultData}
-              className="text-slate-500 hover:text-sky-400 flex items-center gap-1 font-semibold transition-colors"
-              title="Restaurar datos de prueba iniciales"
+              onClick={clearAllData}
+              className="text-slate-400 hover:text-rose-400 flex items-center gap-1.5 font-semibold transition-colors py-1"
+              title="Vaciar todos los registros para iniciar de cero"
             >
-              <RotateCcw className="w-3.5 h-3.5" />
-              <span>Restablecer datos de prueba</span>
+              <Trash2 className="w-4 h-4" />
+              <span>Borrar datos (0 kg)</span>
             </button>
           </div>
         </div>
