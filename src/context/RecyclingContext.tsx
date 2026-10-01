@@ -61,13 +61,19 @@ interface RecyclingContextType {
   isVersusOpen: boolean;
   setIsVersusOpen: (open: boolean) => void;
 
+  notification: { type: 'success' | 'error' | 'info'; text: string } | null;
+  setNotification: (notif: { type: 'success' | 'error' | 'info'; text: string } | null) => void;
+  showNotification: (text: string, type?: 'success' | 'error' | 'info') => void;
+
   // Actions
   addEntry: (params: AddEntryParams) => void;
   deleteEntry: (id: string) => void;
   updateMonthlyGoal: (newGoal: Partial<MonthlyGoal>) => void;
   addSection: (newSection: Omit<Section, 'id'>) => void;
   resetToDefaultData: () => void;
+  clearAllData: () => void;
   exportDataJson: () => void;
+  importDataJson: (jsonString: string) => { success: boolean; error?: string; count?: number };
 }
 
 const RecyclingContext = createContext<RecyclingContextType | undefined>(undefined);
@@ -120,6 +126,20 @@ export const RecyclingProvider: React.FC<{ children: React.ReactNode }> = ({ chi
   const [selectedSectionForDetail, setSelectedSectionForDetail] = useState<Section | null>(null);
   const [isGoalModalOpen, setIsGoalModalOpen] = useState(false);
   const [isVersusOpen, setIsVersusOpen] = useState(false);
+  const [notification, setNotification] = useState<{ type: 'success' | 'error' | 'info'; text: string } | null>(null);
+
+  const showNotification = useCallback((text: string, type: 'success' | 'error' | 'info' = 'info') => {
+    setNotification({ type, text });
+  }, []);
+
+  // Auto-dismiss notification after 4.5 seconds
+  useEffect(() => {
+    if (!notification) return;
+    const timer = setTimeout(() => {
+      setNotification(null);
+    }, 4500);
+    return () => clearTimeout(timer);
+  }, [notification]);
 
   // Sync with LocalStorage without blocking rendering
   useEffect(() => {
@@ -289,6 +309,9 @@ export const RecyclingProvider: React.FC<{ children: React.ReactNode }> = ({ chi
 
     setEntries((prev) => [newEntry, ...prev]);
 
+    // User-friendly feedback message in plain Spanish
+    showNotification(`¡Registro exitoso! Sumaste ${kilos} kg (${points} puntos) para ${sections.find((s) => s.id === sectionId)?.code || 'tu sección'}.`, 'success');
+
     // Audio & sensory feedback (zero lag)
     sounds.playSuccessChime();
 
@@ -308,12 +331,14 @@ export const RecyclingProvider: React.FC<{ children: React.ReactNode }> = ({ chi
   // Action: Delete entry
   const deleteEntry = useCallback((id: string) => {
     setEntries((prev) => prev.filter((e) => e.id !== id));
-  }, []);
+    showNotification('Registro de entrega eliminado correctamente.', 'info');
+  }, [showNotification]);
 
   // Action: Update monthly goal
   const updateMonthlyGoal = useCallback((newGoal: Partial<MonthlyGoal>) => {
     setMonthlyGoal((prev) => ({ ...prev, ...newGoal }));
-  }, []);
+    showNotification('Meta mensual actualizada correctamente.', 'success');
+  }, [showNotification]);
 
   // Action: Add new section
   const addSection = useCallback((newSecData: Omit<Section, 'id'>) => {
@@ -323,7 +348,8 @@ export const RecyclingProvider: React.FC<{ children: React.ReactNode }> = ({ chi
       id,
     };
     setSections((prev) => [...prev, newSection]);
-  }, []);
+    showNotification(`Nueva sección ${newSection.code} agregada a la competencia.`, 'success');
+  }, [showNotification]);
 
   // Action: Reset to defaults
   const resetToDefaultData = useCallback(() => {
@@ -334,8 +360,9 @@ export const RecyclingProvider: React.FC<{ children: React.ReactNode }> = ({ chi
       localStorage.removeItem(STORAGE_KEYS.SECTIONS);
       localStorage.removeItem(STORAGE_KEYS.ENTRIES);
       localStorage.removeItem(STORAGE_KEYS.GOAL);
+      showNotification('Datos de prueba originales restaurados.', 'info');
     }
-  }, []);
+  }, [showNotification]);
 
   // Action: Export data as JSON file
   const exportDataJson = useCallback(() => {
@@ -354,7 +381,41 @@ export const RecyclingProvider: React.FC<{ children: React.ReactNode }> = ({ chi
     link.download = `ReciclaPuntos-${monthlyGoal.monthName.replace(/\s+/g, '_')}.json`;
     link.click();
     URL.revokeObjectURL(url);
-  }, [monthlyGoal, sections, entries]);
+    showNotification('Archivo de respaldo descargado correctamente.', 'success');
+  }, [monthlyGoal, sections, entries, showNotification]);
+
+  // Action: Import data from JSON file
+  const importDataJson = useCallback((jsonString: string) => {
+    try {
+      const data = JSON.parse(jsonString);
+      if (!Array.isArray(data.entries) || !Array.isArray(data.sections)) {
+        throw new Error('El archivo no contiene la lista de secciones o entregas requerida.');
+      }
+      setSections(data.sections);
+      setEntries(data.entries);
+      if (data.monthlyGoal) {
+        setMonthlyGoal(data.monthlyGoal);
+      }
+      sounds.playSuccessChime();
+      showNotification(`¡Copia de seguridad restaurada con éxito! Se cargaron ${data.entries.length} entregas.`, 'success');
+      return { success: true, count: data.entries.length };
+    } catch (err: any) {
+      console.error('Error importando datos:', err);
+      const friendlyErr = 'No se pudo leer el archivo. Asegúrate de que sea un respaldo válido generado por la app.';
+      showNotification(friendlyErr, 'error');
+      return { success: false, error: friendlyErr };
+    }
+  }, [showNotification]);
+
+  // Action: Clear all entries to 0 (borrar todos los datos)
+  const clearAllData = useCallback(() => {
+    if (window.confirm('¿Estás seguro de que deseas BORRAR TODOS los registros de reciclaje? El contador volverá a 0 kg.')) {
+      setEntries([]);
+      localStorage.setItem(STORAGE_KEYS.ENTRIES, JSON.stringify([]));
+      sounds.playTick();
+      showNotification('Todos los registros fueron borrados. El marcador está en cero.', 'info');
+    }
+  }, [showNotification]);
 
   // AI Audit trigger with Gemini 3.8 Flash
   const generateAiAudit = useCallback(async (section?: Section) => {
@@ -405,12 +466,17 @@ export const RecyclingProvider: React.FC<{ children: React.ReactNode }> = ({ chi
         setIsGoalModalOpen,
         isVersusOpen,
         setIsVersusOpen,
+        notification,
+        setNotification,
+        showNotification,
         addEntry,
         deleteEntry,
         updateMonthlyGoal,
         addSection,
         resetToDefaultData,
+        clearAllData,
         exportDataJson,
+        importDataJson,
       }}
     >
       {children}

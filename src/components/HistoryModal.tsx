@@ -1,9 +1,10 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useRef } from 'react';
 import {
   X,
   History,
   Trash2,
   Download,
+  Upload,
   RotateCcw,
   Search,
   Filter,
@@ -23,12 +24,15 @@ export const HistoryModal: React.FC = () => {
     sections,
     deleteEntry,
     resetToDefaultData,
+    clearAllData,
     exportDataJson,
+    importDataJson,
     monthlyGoal,
   } = useRecycling();
 
   const [search, setSearch] = useState('');
   const [filterMaterial, setFilterMaterial] = useState<string>('all');
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   if (!isHistoryOpen) return null;
 
@@ -98,8 +102,36 @@ export const HistoryModal: React.FC = () => {
     }
   };
 
+  const handleImportFile = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      const content = event.target?.result as string;
+      if (content) {
+        const res = importDataJson(content);
+        if (res.success) {
+          alert(`¡Respaldo importado con éxito! Se cargaron ${res.count} registros de reciclaje.`);
+        } else {
+          alert(`Error al importar respaldo: ${res.error}`);
+        }
+      }
+    };
+    reader.readAsText(file);
+    e.target.value = '';
+  };
+
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-sm animate-fadeIn">
+      {/* Hidden file input for JSON import */}
+      <input
+        type="file"
+        ref={fileInputRef}
+        onChange={handleImportFile}
+        accept=".json,application/json"
+        className="hidden"
+      />
+
       <div className="relative w-full max-w-3xl rounded-3xl bg-slate-900 border border-slate-700/80 shadow-2xl shadow-slate-950/80 overflow-hidden flex flex-col max-h-[90vh]">
         
         {/* Header */}
@@ -116,6 +148,15 @@ export const HistoryModal: React.FC = () => {
 
           <div className="flex items-center gap-2">
             <button
+              onClick={() => fileInputRef.current?.click()}
+              className="px-3 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white border border-slate-700 text-xs font-bold flex items-center gap-1.5 transition-all"
+              title="Restaurar copia de seguridad JSON"
+            >
+              <Upload className="w-3.5 h-3.5 text-teal-400" />
+              <span className="hidden sm:inline">Importar</span>
+            </button>
+
+            <button
               onClick={handleExportCsv}
               className="px-3 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white border border-slate-700 text-xs font-bold flex items-center gap-1.5 transition-all"
               title="Descargar Excel / CSV"
@@ -130,7 +171,7 @@ export const HistoryModal: React.FC = () => {
               title="Copia de seguridad JSON"
             >
               <Download className="w-3.5 h-3.5 text-sky-400" />
-              <span className="hidden sm:inline">JSON</span>
+              <span className="hidden sm:inline">Exportar JSON</span>
             </button>
 
             <button
@@ -250,17 +291,29 @@ export const HistoryModal: React.FC = () => {
           )}
         </div>
 
-        {/* Footer with Reset Default */}
-        <div className="p-4 border-t border-slate-800 bg-slate-950/70 flex items-center justify-between text-xs text-slate-400">
+        {/* Footer with Reset Default and Clear Data */}
+        <div className="p-4 border-t border-slate-800 bg-slate-950/70 flex flex-col sm:flex-row items-center justify-between text-xs text-slate-400 gap-3">
           <span>Total de entregas registradas: <strong className="text-white font-mono">{entries.length}</strong></span>
 
-          <button
-            onClick={resetToDefaultData}
-            className="text-slate-500 hover:text-rose-400 flex items-center gap-1 font-semibold transition-colors"
-          >
-            <RotateCcw className="w-3.5 h-3.5" />
-            <span>Restablecer datos de prueba</span>
-          </button>
+          <div className="flex items-center gap-4">
+            <button
+              onClick={clearAllData}
+              className="text-slate-500 hover:text-rose-400 flex items-center gap-1 font-semibold transition-colors"
+              title="Vaciar todos los registros para iniciar de cero"
+            >
+              <Trash2 className="w-3.5 h-3.5" />
+              <span>Borrar datos (0 kg)</span>
+            </button>
+
+            <button
+              onClick={resetToDefaultData}
+              className="text-slate-500 hover:text-sky-400 flex items-center gap-1 font-semibold transition-colors"
+              title="Restaurar datos de prueba iniciales"
+            >
+              <RotateCcw className="w-3.5 h-3.5" />
+              <span>Restablecer datos de prueba</span>
+            </button>
+          </div>
         </div>
 
       </div>

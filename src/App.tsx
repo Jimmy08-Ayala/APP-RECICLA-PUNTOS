@@ -16,6 +16,7 @@ import { HistoryModal } from './components/HistoryModal';
 import { SectionDetailModal } from './components/SectionDetailModal';
 import { VersusModal } from './components/VersusModal';
 import { GoalConfigModal } from './components/GoalConfigModal';
+import { ToastNotification } from './components/ToastNotification';
 import {
   Recycle,
   PlusCircle,
@@ -100,6 +101,7 @@ function DashboardContent() {
       <SectionDetailModal />
       <VersusModal />
       <GoalConfigModal />
+      <ToastNotification />
     </div>
   );
 }

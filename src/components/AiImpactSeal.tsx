@@ -56,7 +56,7 @@ export const AiImpactSeal: React.FC = () => {
           </div>
         </div>
 
-        {/* Generate AI Deep Audit Button (Gemini 3.8 Flash) */}
+        {/* Generate AI Deep Audit Button (Secondary Outlined button) */}
         <div className="flex-shrink-0">
           <button
             onClick={() => {
@@ -64,9 +64,9 @@ export const AiImpactSeal: React.FC = () => {
               generateAiAudit();
             }}
             disabled={isAiLoading}
-            className="w-full sm:w-auto px-5 py-3 rounded-2xl bg-gradient-to-r from-teal-500 via-emerald-500 to-cyan-500 hover:from-teal-400 hover:to-cyan-400 text-slate-950 font-extrabold text-sm shadow-lg shadow-teal-500/25 active:scale-95 transition-all flex items-center justify-center gap-2.5 disabled:opacity-50"
+            className="w-full sm:w-auto min-h-[48px] px-5 py-3 rounded-2xl bg-teal-950/60 hover:bg-teal-500 text-teal-200 hover:text-slate-950 border-2 border-teal-400 font-bold text-base shadow-md active:scale-95 transition-all flex items-center justify-center gap-2.5 disabled:opacity-50"
           >
-            <Sparkles className="w-4 h-4 text-slate-950" />
+            <Sparkles className="w-5 h-5 text-teal-400" />
             <span>{isAiLoading ? 'Auditando con Gemini 3.8...' : 'Dictamen Oficial con IA'}</span>
           </button>
         </div>
@@ -76,98 +76,98 @@ export const AiImpactSeal: React.FC = () => {
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mt-6">
         
         {/* Card 1: Árboles Salvados */}
-        <div className="relative group rounded-2xl bg-slate-800/60 hover:bg-slate-800 border border-slate-700/80 p-5 transition-all">
+        <div className="relative group rounded-3xl bg-slate-900 border-2 border-slate-700 p-5 sm:p-6 transition-all shadow-lg">
           <div className="flex items-center justify-between mb-3">
-            <div className="w-10 h-10 rounded-xl bg-emerald-500/15 border border-emerald-500/30 flex items-center justify-center text-emerald-400">
-              <TreePine className="w-5 h-5" />
+            <div className="w-12 h-12 rounded-2xl bg-emerald-500/20 border border-emerald-500/40 flex items-center justify-center text-emerald-400">
+              <TreePine className="w-6 h-6" />
             </div>
-            <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400">
+            <span className="text-sm font-bold uppercase tracking-wider text-slate-300">
               Preservación Forestal
             </span>
           </div>
 
-          <div className="text-3xl font-black text-white font-mono mb-1">
-            {ecologicalImpact.treesSaved} <span className="text-lg font-normal text-emerald-400">árboles</span>
+          <div className="text-3xl sm:text-4xl font-black text-white font-mono mb-2">
+            {ecologicalImpact.treesSaved} <span className="text-xl font-normal text-emerald-400">árboles</span>
           </div>
-          <p className="text-xs text-slate-300 font-medium">
+          <p className="text-base text-slate-200 font-medium">
             Árboles adultos protegidos de la tala industrial de celulosa y madera.
           </p>
 
-          <div className="mt-3 pt-3 border-t border-slate-700/60 text-[10px] text-slate-400 flex items-center justify-between">
-            <span className="font-semibold text-emerald-400/90">Fuente: EPA WARM v16</span>
-            <span className="text-slate-400 font-mono">0.017 arb/kg papel</span>
+          <div className="mt-4 pt-3 border-t-2 border-slate-800 text-sm text-slate-300 flex items-center justify-between">
+            <span className="font-bold text-emerald-400">Fuente: EPA WARM v16</span>
+            <span className="font-mono text-slate-200">0.017 arb/kg</span>
           </div>
         </div>
 
         {/* Card 2: Litros de Agua Preservados */}
-        <div className="relative group rounded-2xl bg-slate-800/60 hover:bg-slate-800 border border-slate-700/80 p-5 transition-all">
+        <div className="relative group rounded-3xl bg-slate-900 border-2 border-slate-700 p-5 sm:p-6 transition-all shadow-lg">
           <div className="flex items-center justify-between mb-3">
-            <div className="w-10 h-10 rounded-xl bg-sky-500/15 border border-sky-500/30 flex items-center justify-center text-sky-400">
-              <Droplets className="w-5 h-5" />
+            <div className="w-12 h-12 rounded-2xl bg-sky-500/20 border border-sky-500/40 flex items-center justify-center text-sky-400">
+              <Droplets className="w-6 h-6" />
             </div>
-            <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400">
+            <span className="text-sm font-bold uppercase tracking-wider text-slate-300">
               Ahorro Hídrico
             </span>
           </div>
 
-          <div className="text-3xl font-black text-white font-mono mb-1">
-            {ecologicalImpact.waterSavedLitres.toLocaleString('es-ES')} <span className="text-lg font-normal text-sky-400">L</span>
+          <div className="text-3xl sm:text-4xl font-black text-white font-mono mb-2">
+            {ecologicalImpact.waterSavedLitres.toLocaleString('es-ES')} <span className="text-xl font-normal text-sky-400">L</span>
           </div>
-          <p className="text-xs text-slate-300 font-medium">
+          <p className="text-base text-slate-200 font-medium">
             Agua potable ahorrada en procesos industriales de lavado y pulpa.
           </p>
 
-          <div className="mt-3 pt-3 border-t border-slate-700/60 text-[10px] text-slate-400 flex items-center justify-between">
-            <span className="font-semibold text-sky-400/90">Fuente: Water Footprint Net.</span>
-            <span className="text-slate-400 font-mono">26 L/kg papel, 24.5 L/PET</span>
+          <div className="mt-4 pt-3 border-t-2 border-slate-800 text-sm text-slate-300 flex items-center justify-between">
+            <span className="font-bold text-sky-400">Fuente: Water Footprint Net.</span>
+            <span className="font-mono text-slate-200">26 L/kg papel</span>
           </div>
         </div>
 
         {/* Card 3: Kg de CO2e Evitados */}
-        <div className="relative group rounded-2xl bg-slate-800/60 hover:bg-slate-800 border border-slate-700/80 p-5 transition-all">
+        <div className="relative group rounded-3xl bg-slate-900 border-2 border-slate-700 p-5 sm:p-6 transition-all shadow-lg">
           <div className="flex items-center justify-between mb-3">
-            <div className="w-10 h-10 rounded-xl bg-teal-500/15 border border-teal-500/30 flex items-center justify-center text-teal-400">
-              <CloudSun className="w-5 h-5" />
+            <div className="w-12 h-12 rounded-2xl bg-teal-500/20 border border-teal-500/40 flex items-center justify-center text-teal-400">
+              <CloudSun className="w-6 h-6" />
             </div>
-            <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400">
+            <span className="text-sm font-bold uppercase tracking-wider text-slate-300">
               Huella de Carbono
             </span>
           </div>
 
-          <div className="text-3xl font-black text-white font-mono mb-1">
-            {ecologicalImpact.co2PreventedKg.toLocaleString('es-ES')} <span className="text-lg font-normal text-teal-400">kg CO2e</span>
+          <div className="text-3xl sm:text-4xl font-black text-white font-mono mb-2">
+            {ecologicalImpact.co2PreventedKg.toLocaleString('es-ES')} <span className="text-xl font-normal text-teal-400">kg CO2</span>
           </div>
-          <p className="text-xs text-slate-300 font-medium">
+          <p className="text-base text-slate-200 font-medium">
             Emisiones de gases de efecto invernadero prevenidas en vertederos.
           </p>
 
-          <div className="mt-3 pt-3 border-t border-slate-700/60 text-[10px] text-slate-400 flex items-center justify-between">
-            <span className="font-semibold text-teal-400/90">Fuente: IPCC & EPA WARM</span>
-            <span className="text-slate-400 font-mono">9.13 kg CO2/kg Al</span>
+          <div className="mt-4 pt-3 border-t-2 border-slate-800 text-sm text-slate-300 flex items-center justify-between">
+            <span className="font-bold text-teal-400">Fuente: IPCC & EPA WARM</span>
+            <span className="font-mono text-slate-200">9.13 kg/kg Al</span>
           </div>
         </div>
 
         {/* Card 4: Energía y Equivalencias Tangibles */}
-        <div className="relative group rounded-2xl bg-slate-800/60 hover:bg-slate-800 border border-slate-700/80 p-5 transition-all">
+        <div className="relative group rounded-3xl bg-slate-900 border-2 border-slate-700 p-5 sm:p-6 transition-all shadow-lg">
           <div className="flex items-center justify-between mb-3">
-            <div className="w-10 h-10 rounded-xl bg-amber-500/15 border border-amber-500/30 flex items-center justify-center text-amber-400">
-              <Zap className="w-5 h-5" />
+            <div className="w-12 h-12 rounded-2xl bg-amber-500/20 border border-amber-500/40 flex items-center justify-center text-amber-400">
+              <Zap className="w-6 h-6" />
             </div>
-            <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400">
+            <span className="text-sm font-bold uppercase tracking-wider text-slate-300">
               Energía Eléctrica
             </span>
           </div>
 
-          <div className="text-3xl font-black text-white font-mono mb-1">
-            {ecologicalImpact.energySavedKwh.toLocaleString('es-ES')} <span className="text-lg font-normal text-amber-400">kWh</span>
+          <div className="text-3xl sm:text-4xl font-black text-white font-mono mb-2">
+            {ecologicalImpact.energySavedKwh.toLocaleString('es-ES')} <span className="text-xl font-normal text-amber-400">kWh</span>
           </div>
-          <p className="text-xs text-slate-300 font-medium">
+          <p className="text-base text-slate-200 font-medium">
             Electricidad limpia preservada en la red energética.
           </p>
 
-          <div className="mt-3 pt-3 border-t border-slate-700/60 text-[10px] text-slate-400 flex items-center justify-between">
-            <span className="font-semibold text-amber-400/90">Fuente: US EIA & IAI</span>
-            <span className="text-slate-400 font-mono">95% ahorro en latas</span>
+          <div className="mt-4 pt-3 border-t-2 border-slate-800 text-sm text-slate-300 flex items-center justify-between">
+            <span className="font-bold text-amber-400">Fuente: US EIA & IAI</span>
+            <span className="font-mono text-slate-200">95% ahorro</span>
           </div>
         </div>
 

@@ -1,12 +1,9 @@
 import React, { useMemo } from 'react';
 import {
   Target,
-  Sparkles,
   CheckCircle2,
   Calendar,
   Flame,
-  ArrowUpRight,
-  TrendingUp,
 } from 'lucide-react';
 import { useRecycling } from '../context/RecyclingContext';
 import { sounds } from '../utils/audio';
@@ -37,63 +34,64 @@ export const MonthlyGoalCard: React.FC = () => {
   }, [monthlyGoal, totalInstituteKilos]);
 
   const milestones = [
-    { percent: 25, label: 'Semilla', icon: '🌱', description: 'Primer impulso' },
+    { percent: 25, label: 'Semilla', icon: '🌱', description: '25% cumplido' },
     { percent: 50, label: 'Brote', icon: '🌿', description: 'Mitad del camino' },
-    { percent: 75, label: 'Roble', icon: '🌳', description: 'Impacto fuerte' },
-    { percent: 100, label: 'Bosque', icon: '🏆', description: 'Meta cumplida' },
+    { percent: 75, label: 'Roble', icon: '🌳', description: 'Gran impacto' },
+    { percent: 100, label: 'Bosque', icon: '🏆', description: 'Meta escolar' },
   ];
 
   return (
-    <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-slate-900 via-slate-900/90 to-emerald-950/40 border border-emerald-500/30 p-6 sm:p-8 shadow-2xl shadow-emerald-950/30">
+    <div className="relative overflow-hidden rounded-3xl bg-slate-900 border-2 border-slate-800 p-5 sm:p-8 shadow-2xl">
       
       {/* Decorative ambient glow */}
       <div className="absolute -top-24 -right-24 w-80 h-80 bg-emerald-500/10 rounded-full blur-3xl pointer-events-none" />
-      <div className="absolute -bottom-20 -left-20 w-60 h-60 bg-teal-500/10 rounded-full blur-3xl pointer-events-none" />
 
-      <div className="relative z-10 flex flex-col lg:flex-row lg:items-center justify-between gap-6 pb-6 border-b border-slate-800">
+      <div className="relative z-10 flex flex-col lg:flex-row lg:items-center justify-between gap-6 pb-6 border-b-2 border-slate-800">
         
         {/* Title & Month Badge */}
         <div>
           <div className="flex flex-wrap items-center gap-2 mb-2">
-            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-emerald-500/15 text-emerald-400 border border-emerald-500/30">
-              <Calendar className="w-3.5 h-3.5" />
+            <span className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full text-base font-bold bg-emerald-500/20 text-emerald-300 border border-emerald-500/40">
+              <Calendar className="w-5 h-5" />
               Meta de {monthlyGoal.monthName}
             </span>
             {paceInfo.isGoalReached && (
-              <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-bold bg-amber-500/20 text-amber-300 border border-amber-500/40 animate-bounce">
-                🎉 ¡META MENSUAL ALCANZADA!
+              <span className="inline-flex items-center gap-1.5 px-3.5 py-1 rounded-full text-base font-black bg-amber-500/20 text-amber-300 border border-amber-500/50 animate-bounce">
+                🎉 ¡META MENSUAL CUMPLIDA!
               </span>
             )}
           </div>
 
-          <h2 className="text-2xl sm:text-3xl font-black text-white tracking-tight flex items-center gap-2">
+          <h2 className="text-2xl sm:text-3xl font-black text-white tracking-tight">
             Desafío Ecológico Intersecciones
           </h2>
-          <p className="text-sm text-slate-400 mt-1">
+          <p className="text-base text-slate-300 mt-1 max-w-xl">
             Cada kilo registrado por las secciones suma al compromiso verde de todo el instituto.
           </p>
         </div>
 
-        {/* Right side stats pill & Edit button */}
-        <div className="flex items-center gap-4">
-          <div className="bg-slate-800/80 rounded-2xl p-3.5 border border-slate-700/80 text-right">
-            <span className="text-[11px] text-slate-400 font-medium block">Objetivo Escolar</span>
-            <div className="text-xl sm:text-2xl font-black text-white font-mono">
+        {/* Right side stats pill & Edit Outlined button */}
+        <div className="flex items-center gap-3 self-start lg:self-center">
+          <div className="bg-slate-950 rounded-2xl p-4 border-2 border-slate-800 text-right">
+            <span className="text-sm text-slate-300 font-semibold block">Objetivo Escolar</span>
+            <div className="text-2xl sm:text-3xl font-black text-white font-mono">
               <span className="text-emerald-400">{totalInstituteKilos.toLocaleString('es-ES')}</span>
-              <span className="text-slate-500 font-normal"> / {monthlyGoal.targetKilos.toLocaleString('es-ES')} kg</span>
+              <span className="text-slate-400 font-normal text-lg"> / {monthlyGoal.targetKilos.toLocaleString('es-ES')} kg</span>
             </div>
           </div>
 
+          {/* Secondary Outlined button */}
           <button
             onClick={() => {
               sounds.playTick();
               setIsGoalModalOpen(true);
             }}
-            className="p-3 rounded-2xl bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white border border-slate-700 transition-all flex flex-col items-center justify-center gap-1 text-xs"
+            className="min-h-[56px] px-4 py-3 rounded-2xl bg-transparent hover:bg-slate-800 text-slate-200 hover:text-white border-2 border-slate-700 transition-all flex flex-col items-center justify-center gap-1 text-base font-bold"
             title="Ajustar Meta Mensual"
+            aria-label="Ajustar meta mensual"
           >
             <Target className="w-5 h-5 text-emerald-400" />
-            <span className="text-[10px] font-semibold">Editar</span>
+            <span className="text-sm">Editar</span>
           </button>
         </div>
 
@@ -101,60 +99,60 @@ export const MonthlyGoalCard: React.FC = () => {
 
       {/* Main Progress Bar & Percentage */}
       <div className="relative z-10 pt-6">
-        <div className="flex items-end justify-between mb-3">
+        <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-3 mb-3">
           <div>
-            <span className="text-xs uppercase tracking-wider font-bold text-slate-400">Porcentaje de Avance</span>
-            <div className="flex items-baseline gap-2">
-              <span className="text-4xl sm:text-5xl font-black bg-gradient-to-r from-emerald-400 via-teal-300 to-lime-400 bg-clip-text text-transparent font-mono">
+            <span className="text-sm uppercase tracking-wider font-bold text-slate-400">Porcentaje de Avance</span>
+            <div className="flex items-baseline gap-3">
+              <span className="text-4xl sm:text-5xl font-black text-emerald-400 font-mono">
                 {goalPercentage}%
               </span>
-              <span className="text-xs font-semibold text-slate-400">
-                {paceInfo.isGoalReached ? '¡Superando la meta!' : `Faltan ${paceInfo.remainingKilos} kg`}
+              <span className="text-base font-semibold text-slate-200">
+                {paceInfo.isGoalReached ? '¡Superando la meta del mes!' : `Faltan ${paceInfo.remainingKilos} kg para el objetivo`}
               </span>
             </div>
           </div>
 
           {/* Daily pace badge */}
-          <div className="text-right hidden sm:block">
-            <div className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-800/90 border border-slate-700 text-xs font-semibold text-slate-300">
-              <Flame className="w-4 h-4 text-amber-400 animate-pulse" />
+          <div className="text-left sm:text-right">
+            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-2xl bg-slate-950 border-2 border-slate-800 text-base font-medium text-slate-200">
+              <Flame className="w-5 h-5 text-amber-400 animate-pulse flex-shrink-0" />
               <span>
-                Ritmo necesario: <strong className="text-amber-300 font-mono">{paceInfo.dailyKilosNeeded} kg/día</strong>
+                Ritmo necesario: <strong className="text-amber-300 font-mono font-bold">{paceInfo.dailyKilosNeeded} kg/día</strong>
               </span>
-              <span className="text-slate-500">({paceInfo.daysLeft} días restantes)</span>
+              <span className="text-slate-400 text-sm">({paceInfo.daysLeft} días restantes)</span>
             </div>
           </div>
         </div>
 
         {/* The Track and Fill */}
-        <div className="relative h-6 sm:h-7 w-full bg-slate-950 rounded-full p-1 border border-slate-800 overflow-hidden shadow-inner">
+        <div className="relative h-7 sm:h-8 w-full bg-slate-950 rounded-full p-1 border-2 border-slate-800 overflow-hidden shadow-inner">
           <div
-            className="h-full rounded-full bg-gradient-to-r from-emerald-500 via-teal-400 to-lime-400 transition-all duration-700 ease-out shadow-lg shadow-emerald-500/50 flex items-center justify-end pr-2"
-            style={{ width: `${Math.min(100, Math.max(4, goalPercentage))}%` }}
+            className="h-full rounded-full bg-gradient-to-r from-emerald-500 via-teal-400 to-lime-400 transition-all duration-700 ease-out flex items-center justify-end pr-2"
+            style={{ width: `${Math.min(100, Math.max(3, goalPercentage))}%` }}
           >
-            <div className="w-2.5 h-2.5 rounded-full bg-white animate-ping opacity-75" />
+            <div className="w-3 h-3 rounded-full bg-white animate-ping opacity-80" />
           </div>
         </div>
 
-        {/* Milestone Steps Markers */}
-        <div className="grid grid-cols-4 gap-2 mt-4 pt-2">
+        {/* Milestone Steps Markers (Requisito 2: Texto >= 16px legible) */}
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mt-5">
           {milestones.map((m) => {
             const isCompleted = goalPercentage >= m.percent;
             return (
               <div
                 key={m.percent}
-                className={`relative flex flex-col items-center text-center p-2 rounded-xl transition-all ${
+                className={`relative flex flex-col items-center text-center p-3 rounded-2xl border-2 transition-all ${
                   isCompleted
-                    ? 'bg-emerald-500/10 border border-emerald-500/30 text-emerald-300'
-                    : 'bg-slate-800/40 border border-slate-800 text-slate-500'
+                    ? 'bg-emerald-950/60 border-emerald-400 text-emerald-200 shadow-md'
+                    : 'bg-slate-950/60 border-slate-800 text-slate-400'
                 }`}
               >
-                <span className="text-xl sm:text-2xl mb-1">{m.icon}</span>
-                <span className="text-xs font-bold leading-tight flex items-center gap-1">
+                <span className="text-3xl mb-1">{m.icon}</span>
+                <span className="text-base font-extrabold text-white leading-tight flex items-center gap-1.5">
                   {m.label} ({m.percent}%)
-                  {isCompleted && <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400 inline" />}
+                  {isCompleted && <CheckCircle2 className="w-4 h-4 text-emerald-400 inline" />}
                 </span>
-                <span className="text-[10px] text-slate-400 hidden sm:block">{m.description}</span>
+                <span className="text-sm text-slate-300 mt-0.5">{m.description}</span>
               </div>
             );
           })}
