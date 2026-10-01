@@ -29,11 +29,13 @@ export const RegisterModal: React.FC = () => {
   const [registeredBy, setRegisteredBy] = useState<string>('');
   const [notes, setNotes] = useState<string>('');
   const [formError, setFormError] = useState<string | null>(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   // Sync preselected section when modal opens
   useEffect(() => {
     if (isRegisterOpen) {
       setFormError(null);
+      setIsSubmitting(false);
       if (preselectedSectionId) {
         setSectionId(preselectedSectionId);
       } else if (sections.length > 0 && !sectionId) {
@@ -42,7 +44,8 @@ export const RegisterModal: React.FC = () => {
     }
   }, [isRegisterOpen, preselectedSectionId, sections, sectionId]);
 
-  const kilos = parseFloat(kilosStr) || 0;
+  const rawKilos = parseFloat(kilosStr);
+  const kilos = isNaN(rawKilos) ? 0 : Number(rawKilos.toFixed(1));
   const selectedMaterial = RECYCLING_MATERIALS[materialId];
   const pointsCalculated = Math.round(kilos * (selectedMaterial?.pointsPerKg || 0));
 
@@ -56,6 +59,7 @@ export const RegisterModal: React.FC = () => {
   const handleClose = () => {
     sounds.playTick();
     setFormError(null);
+    setIsSubmitting(false);
     setIsRegisterOpen(false);
     setPreselectedSectionId(undefined);
   };
@@ -64,29 +68,42 @@ export const RegisterModal: React.FC = () => {
     sounds.playTick();
     setFormError(null);
     const current = parseFloat(kilosStr) || 0;
-    const next = Math.max(0.1, Number((current + amount).toFixed(1)));
+    const next = Math.max(0.1, Math.min(1000, Number((current + amount).toFixed(1))));
     setKilosStr(next.toString());
   };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    if (isSubmitting) return; // Prevent double click
+
     if (!sectionId) {
-      setFormError('Por favor selecciona la sección que entrega los materiales.');
+      setFormError('Por favor selecciona la sección que realiza la entrega.');
       return;
     }
 
-    if (kilos <= 0 || isNaN(kilos)) {
-      setFormError('Por favor ingresa una cantidad de kilos mayor a cero.');
+    if (isNaN(kilos) || kilos <= 0) {
+      setFormError('Por favor ingresa una cantidad de kilos mayor a cero (ejemplo: 5.5).');
       return;
     }
 
+    if (kilos > 1000) {
+      setFormError('El peso máximo por entrega individual es de 1,000 kg para evitar errores de tipeo.');
+      return;
+    }
+
+    setIsSubmitting(true);
     setFormError(null);
+
+    // Sanitize string inputs
+    const cleanRegisteredBy = registeredBy.trim().slice(0, 60);
+    const cleanNotes = notes.trim().slice(0, 140);
+
     addEntry({
       sectionId,
       materialId,
       kilos,
-      registeredBy,
-      notes,
+      registeredBy: cleanRegisteredBy,
+      notes: cleanNotes,
     });
 
     handleClose();
@@ -240,8 +257,13 @@ export const RegisterModal: React.FC = () => {
                 type="number"
                 step="0.1"
                 min="0.1"
-                max="999"
+                max="1000"
                 value={kilosStr}
+                onKeyDown={(e) => {
+                  if (['e', 'E', '+', '-'].includes(e.key)) {
+                    e.preventDefault();
+                  }
+                }}
                 onChange={(e) => {
                   setKilosStr(e.target.value);
                   setFormError(null);
@@ -304,7 +326,7 @@ export const RegisterModal: React.FC = () => {
             </div>
           </div>
 
-          {/* Deliverer and Notes with permanent explicit labels */}
+          {/* Deliverer and Notes with permanent explicit labels and maxLength limits */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
               <label htmlFor="registered-by" className="block text-base font-bold text-white mb-1">
@@ -313,6 +335,7 @@ export const RegisterModal: React.FC = () => {
               <input
                 id="registered-by"
                 type="text"
+                maxLength={60}
                 value={registeredBy}
                 onChange={(e) => setRegisteredBy(e.target.value)}
                 placeholder="Ejemplo: Valentina Ruiz o Prof. Soto"
@@ -327,6 +350,7 @@ export const RegisterModal: React.FC = () => {
               <input
                 id="notes-input"
                 type="text"
+                maxLength={140}
                 value={notes}
                 onChange={(e) => setNotes(e.target.value)}
                 placeholder="Ejemplo: Recolectado en el recreo"
@@ -339,11 +363,11 @@ export const RegisterModal: React.FC = () => {
           <div className="pt-2">
             <button
               type="submit"
-              disabled={kilos <= 0}
+              disabled={isSubmitting || kilos <= 0}
               className="w-full min-h-[56px] py-4 px-6 rounded-2xl bg-emerald-500 hover:bg-emerald-400 active:bg-emerald-600 text-slate-950 font-black text-lg sm:text-xl shadow-xl shadow-emerald-500/30 active:scale-98 transition-all flex items-center justify-center gap-2.5 disabled:opacity-50 disabled:cursor-not-allowed"
             >
               <CheckCircle className="w-6 h-6 text-slate-950" />
-              <span>Confirmar y Sumar {pointsCalculated} Puntos</span>
+              <span>{isSubmitting ? 'Guardando entrega...' : `Confirmar y Sumar ${pointsCalculated} Puntos`}</span>
             </button>
           </div>
 

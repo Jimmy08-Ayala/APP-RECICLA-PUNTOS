@@ -33,10 +33,11 @@ export const GoalConfigModal: React.FC = () => {
 
   const handleSaveGoal = (e: React.FormEvent) => {
     e.preventDefault();
-    const kg = parseFloat(targetKilos) || 1000;
+    const rawKg = parseFloat(targetKilos);
+    const kg = isNaN(rawKg) ? 1200 : Math.max(50, Math.min(100000, Number(rawKg.toFixed(1))));
     updateMonthlyGoal({
-      schoolName,
-      monthName,
+      schoolName: schoolName.trim().slice(0, 80) || 'Instituto Escolar',
+      monthName: monthName.trim().slice(0, 40) || 'Mes en Curso',
       targetKilos: kg,
     });
     sounds.playSuccessChime();

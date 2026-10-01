@@ -387,25 +387,69 @@ export const RecyclingProvider: React.FC<{ children: React.ReactNode }> = ({ chi
   // Action: Import data from JSON file
   const importDataJson = useCallback((jsonString: string) => {
     try {
-      const data = JSON.parse(jsonString);
-      if (!Array.isArray(data.entries) || !Array.isArray(data.sections)) {
-        throw new Error('El archivo no contiene la lista de secciones o entregas requerida.');
+      if (!jsonString || typeof jsonString !== 'string') {
+        throw new Error('El contenido del archivo está vacío.');
       }
-      setSections(data.sections);
-      setEntries(data.entries);
-      if (data.monthlyGoal) {
-        setMonthlyGoal(data.monthlyGoal);
+      const data = JSON.parse(jsonString);
+      if (!data || typeof data !== 'object') {
+        throw new Error('El archivo no tiene una estructura JSON válida.');
+      }
+      if (!Array.isArray(data.sections) || data.sections.length === 0) {
+        throw new Error('El archivo debe contener la lista de secciones participantes.');
+      }
+
+      // Sanitize sections
+      const validSections = data.sections.filter(
+        (s: any) => s && typeof s.id === 'string' && typeof s.code === 'string'
+      );
+      if (validSections.length === 0) {
+        throw new Error('No se encontraron secciones válidas en el archivo.');
+      }
+
+      // Sanitize entries
+      const validEntries: RecyclingEntry[] = (Array.isArray(data.entries) ? data.entries : [])
+        .filter((e: any) => {
+          return (
+            e &&
+            typeof e.sectionId === 'string' &&
+            typeof e.materialId === 'string' &&
+            RECYCLING_MATERIALS[e.materialId as MaterialId] !== undefined &&
+            typeof e.kilos === 'number' &&
+            isFinite(e.kilos) &&
+            e.kilos > 0
+          );
+        })
+        .map((e: any) => ({
+          id: String(e.id || `ent-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`),
+          sectionId: String(e.sectionId),
+          materialId: e.materialId as MaterialId,
+          kilos: Number(Number(e.kilos).toFixed(1)),
+          points: Number(e.points) || Math.round(Number(e.kilos) * (RECYCLING_MATERIALS[e.materialId as MaterialId]?.pointsPerKg || 10)),
+          timestamp: typeof e.timestamp === 'number' ? e.timestamp : Date.now(),
+          formattedDate: typeof e.formattedDate === 'string' ? e.formattedDate : new Date().toLocaleDateString('es-ES'),
+          registeredBy: typeof e.registeredBy === 'string' ? e.registeredBy.slice(0, 60) : undefined,
+          notes: typeof e.notes === 'string' ? e.notes.slice(0, 140) : undefined,
+        }));
+
+      setSections(validSections);
+      setEntries(validEntries);
+      if (data.monthlyGoal && typeof data.monthlyGoal === 'object') {
+        setMonthlyGoal({
+          ...monthlyGoal,
+          ...data.monthlyGoal,
+          targetKilos: Math.max(50, Number(data.monthlyGoal.targetKilos) || 1200),
+        });
       }
       sounds.playSuccessChime();
-      showNotification(`¡Copia de seguridad restaurada con éxito! Se cargaron ${data.entries.length} entregas.`, 'success');
-      return { success: true, count: data.entries.length };
+      showNotification(`¡Copia de seguridad restaurada con éxito! Se cargaron ${validEntries.length} entregas válidas.`, 'success');
+      return { success: true, count: validEntries.length };
     } catch (err: any) {
       console.error('Error importando datos:', err);
-      const friendlyErr = 'No se pudo leer el archivo. Asegúrate de que sea un respaldo válido generado por la app.';
+      const friendlyErr = err?.message || 'No se pudo leer el archivo. Asegúrate de que sea un respaldo válido generado por la app.';
       showNotification(friendlyErr, 'error');
       return { success: false, error: friendlyErr };
     }
-  }, [showNotification]);
+  }, [monthlyGoal, showNotification]);
 
   // Action: Clear all entries to 0 (borrar todos los datos)
   const clearAllData = useCallback(() => {

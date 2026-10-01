@@ -21,13 +21,17 @@ export async function requestAiEquivalencies(params: {
     totalKg += entry.kilos;
   }
 
-  // Attempt backend API call (Gemini 3.8 Flash)
+  // Attempt backend API call (Gemini 3.8 Flash) with 8s network timeout
   try {
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 8000);
+
     const response = await fetch('/api/ai-equivalencias', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
       },
+      signal: controller.signal,
       body: JSON.stringify({
         section: section ? `${section.code} - ${section.name} (${section.mascot})` : 'Instituto Completo',
         materialsBreakdown,
@@ -36,6 +40,8 @@ export async function requestAiEquivalencies(params: {
         month: monthName,
       }),
     });
+
+    clearTimeout(timeoutId);
 
     if (response.ok) {
       const json = await response.json();

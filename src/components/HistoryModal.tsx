@@ -66,22 +66,28 @@ export const HistoryModal: React.FC = () => {
     });
   }, [entries, filterMaterial, search, sectionMap]);
 
-  // Export to CSV
+  // Export to CSV with anti-formula injection sanitization
   const handleExportCsv = () => {
     sounds.playTick();
+    const sanitizeCsv = (val: string) => {
+      const str = (val || '').replace(/"/g, '""');
+      // Escape CSV formula triggers (=, +, -, @)
+      return /^[=\+\-@]/.test(str) ? `"'${str}"` : `"${str}"`;
+    };
+
     const headers = ['ID', 'Fecha', 'Sección', 'Material', 'Kilos', 'Puntos', 'EntregadoPor', 'Notas'];
     const rows = entries.map((e) => {
       const sec = sectionMap.get(e.sectionId);
       const mat = RECYCLING_MATERIALS[e.materialId];
       return [
-        `"${e.id}"`,
-        `"${e.formattedDate}"`,
-        `"${sec?.code || e.sectionId}"`,
-        `"${mat?.name || e.materialId}"`,
+        sanitizeCsv(e.id),
+        sanitizeCsv(e.formattedDate),
+        sanitizeCsv(sec?.code || e.sectionId),
+        sanitizeCsv(mat?.name || e.materialId),
         e.kilos,
         e.points,
-        `"${(e.registeredBy || '').replace(/"/g, '""')}"`,
-        `"${(e.notes || '').replace(/"/g, '""')}"`,
+        sanitizeCsv(e.registeredBy || ''),
+        sanitizeCsv(e.notes || ''),
       ].join(',');
     });
 
